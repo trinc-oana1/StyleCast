@@ -7,12 +7,11 @@ namespace StyleCast.Backend.Models
         [Key]
         public int Id { get; set; }
 
-        [Required, EmailAddress]
-        [StringLength(100)]
-        public string Email { get; set; }
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(100)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 }

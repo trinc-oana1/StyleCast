@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StyleCast.Backend.Data;
 using StyleCast.Backend.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace StyleCast.Backend.Controllers
 {
@@ -15,27 +18,47 @@ namespace StyleCast.Backend.Controllers
             _context = context;
         }
 
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] User user)
+        // Funcție pentru hash-ul parolei
+        private string HashPassword(string password)
         {
-            if (_context.Users.Any(u => u.Email == user.Email))
-                return BadRequest("User already exists");
-
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            return Ok("User registered successfully");
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(bytes);
         }
 
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] User user)
+        // REGISTER
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] User user)
         {
-            var existing = _context.Users.FirstOrDefault(
-                u => u.Email == user.Email && u.Password == user.Password);
+            if (user == null || string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Password))
+                return BadRequest(new { message = "Invalid data" });
+
+            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+                return BadRequest(new { message = "Email already exists" });
+
+            user.Password = HashPassword(user.Password);
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User registered successfully" });
+        }
+
+        // LOGIN
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] User user)
+        {
+            if (user == null || string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Password))
+                return BadRequest(new { message = "Invalid data" });
+
+            var hashed = HashPassword(user.Password);
+
+            var existing = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email && u.Password == hashed);
 
             if (existing == null)
-                return Unauthorized("Invalid credentials");
+                return Unauthorized(new { message = "Invalid email or password" });
 
-            return Ok("Login successful");
+            return Ok(new { message = "Login successful" });
         }
     }
 }

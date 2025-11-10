@@ -68,11 +68,27 @@
 </main>
 
 <script>
-    document.getElementById('registerForm').addEventListener('submit', (e) => {
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert('Registration successful! (demo)');
-        window.location.href = '/pages/signin.html';
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (response.ok) {
+            alert('Registration successful!');
+            window.location.href = '/pages/signin.html';
+        } else {
+            const data = await response.json();
+            alert(data.message || 'Registration failed!');
+        }
     });
 </script>
+
 </body>
 </html>
