@@ -194,5 +194,5 @@
 /Users/missclick/RiderProjects/StyleCast/bin/Debug/net9.0/package.json
 /Users/missclick/RiderProjects/StyleCast/bin/Debug/net9.0/StyleCast.staticwebassets.runtime.json
 /Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/czfgmjamip-zmo8m5fjzd.gz
-/Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/t82ma13f9y-a4n5oy203i.gz
-/Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/2babbk23fk-i9ob98vf7j.gz
+/Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/t82ma13f9y-nl2j4wzzqt.gz
+/Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/2babbk23fk-oeqg5yv59o.gz

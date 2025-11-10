@@ -35,7 +35,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ✅ trebuie să adaugi aceste două linii:
 app.UseDefaultFiles();  // caută index.html implicit
 app.UseStaticFiles();   // servește din wwwroot
 
@@ -43,7 +42,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 
-// ✅ fallback dacă nu găsește altceva – redirecționează la pagina ta de start
+// dacă nu găsește altceva – redirecționează la pagina ta de start
 app.MapFallbackToFile("pages/signin.html");
 
 app.Run();
