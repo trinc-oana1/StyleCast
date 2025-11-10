@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>StyleCast — Register</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { navy:'#1A2A4F', peach:'#F7A5A5' } } }
+    };
+  </script>
+</head>
+
+<body class="min-h-screen bg-peach text-navy font-[Tahoma]">
+
+<header class="bg-navy text-peach shadow-md">
+  <nav class="relative flex items-center justify-between h-16 px-6">
+    <!-- IMPORTANT: din /wwwroot/pages -> ../images -->
+    <a href="../home.html" class="flex items-center gap-3">
+      <img src="../images/logo.png" alt="StyleCast Logo" class="h-16 w-auto" />
+      <span class="font-extrabold text-xl tracking-wide">StyleCast</span>
+    </a>
+
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-6 items-center">
+      <a href="../home.html"    class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Home</a>
+      <a href="../explore.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Explore</a>
+      <a href="./signin.html"   class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Sign in</a>
+    </div>
+
+  </nav>
+</header>
+
+
+<main class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+  <section class="w-full max-w-sm bg-white/60 backdrop-blur rounded-2xl shadow-lg ring-1 ring-navy/10 p-8 text-center">
+    <h1 class="text-3xl font-bold mb-2">Create account</h1>
+    <p class="text-sm opacity-80 mb-8">Please fill in your details to register.</p>
+
+    <form id="registerForm" class="space-y-4" action="#" method="POST">
+      <div class="text-left">
+        <label for="email" class="block text-sm font-medium mb-1 text-center">Email</label>
+        <input
+                id="email" name="email" type="email" placeholder="Enter your email"
+                class="w-full p-3 rounded-md bg-white text-navy text-center placeholder-navy/40 border border-navy/20 focus:outline-none focus:ring-2 focus:ring-navy"
+                required />
+      </div>
+
+      <div class="text-left">
+        <label for="password" class="block text-sm font-medium mb-1 text-center">Password</label>
+        <input
+                id="password" name="password" type="password" placeholder="**********"
+                class="w-full p-3 rounded-md bg-white text-navy text-center placeholder-navy/40 border border-navy/20 focus:outline-none focus:ring-2 focus:ring-navy"
+                required />
+      </div>
+
+      <button type="submit"
+              class="w-full mt-2 bg-navy text-peach text-sm font-semibold py-3 rounded-md shadow-md hover:opacity-90">
+        Register
+      </button>
+
+      <p class="text-sm mt-3">
+        Already have an account?
+        <a href="./signin.html" class="ml-1 font-medium underline decoration-navy hover:text-navy/70">
+          Sign in here
+        </a>
+      </p>
+    </form>
+  </section>
+</main>
+
+<script>
+  document.getElementById('registerForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Registration successful! (demo)');
+    window.location.href = './signin.html';
+  });
+</script>
+</body>
+</html>

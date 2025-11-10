@@ -1,0 +1,26 @@
+﻿{
+  "name": "stylecast",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/site.css --watch",
+    "build:css": "tailwindcss -i ./Styles/tailwind.css -o ./wwwroot/css/site.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trinc-oana1/StyleCast.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/trinc-oana1/StyleCast/issues"
+  },
+  "homepage": "https://github.com/trinc-oana1/StyleCast#readme",
+  "description": "",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.13"
+  }
+}
