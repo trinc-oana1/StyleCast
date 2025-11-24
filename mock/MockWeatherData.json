@@ -1,0 +1,12 @@
+{
+  "city": "Bucharest",
+  "dateTimeStart": "2025-11-24T08:00:00Z",
+  "intervalHours": 6,
+  "tempMin": 4.8,
+  "tempMax": 11.6,
+  "feelsLikeAvg": 7.2,
+  "windAvg": 3.4,
+  "humidityAvg": 68,
+  "rainChance": 0.35,
+  "mainCondition": "Clouds"
+}
