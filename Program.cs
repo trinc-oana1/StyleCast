@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StyleCast.Backend.Data;
+using StyleCast.Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient<WeatherService>();
+//aici adaugam si cache service cand o sa fie facut
 
 // Database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -35,14 +38,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseDefaultFiles();  // caută index.html implicit
-app.UseStaticFiles();   // servește din wwwroot
+app.UseDefaultFiles();  // looking for index.html
+app.UseStaticFiles();   // using from wwwroot
 
 app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 
-// dacă nu găsește altceva – redirecționează la pagina ta de start
+// redirecting to start page
 app.MapFallbackToFile("pages/signin.html");
 
 app.Run();
