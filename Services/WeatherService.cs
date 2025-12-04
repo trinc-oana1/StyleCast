@@ -64,8 +64,9 @@ namespace StyleCast.Backend.Services
             var windAvg = winds.Average();
             var humidityAvg = humidities.Average();
 
-            //simpler rainChance: 1 if there might be precipitations in the next hours
-            var rainChance = rains.Any(r => r > 0.2) ? 1.0 : 0.0;
+            //simpler rainChance: percent of hours with measurable precipitation (>0.2 mm)
+            var rainChance = Math.Round((double)rains.Count(r => r > 0.2) / rains.Count * 100, 0);
+
 
             //determine main condition
             var mainCondition = MapWeatherCode(
@@ -90,6 +91,12 @@ namespace StyleCast.Backend.Services
 
             var result = new
             {
+                location = new
+                {
+                    city = "Bucharest",     // replace later with actual detected city
+                    latitude = lat,
+                    longitude = lon
+                },
                 dateTimeStart = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 intervalHours = hours,
                 tempMin = RoundHalf(tempMin),
