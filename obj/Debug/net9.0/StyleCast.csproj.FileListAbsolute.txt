@@ -196,3 +196,4 @@
 /Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/czfgmjamip-zmo8m5fjzd.gz
 /Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/t82ma13f9y-8101bz0eki.gz
 /Users/missclick/RiderProjects/StyleCast/obj/Debug/net9.0/compressed/2babbk23fk-2dzq7kqigq.gz
+/Users/missclick/RiderProjects/StyleCast/bin/Debug/net9.0/mock/MockWeatherData.json
