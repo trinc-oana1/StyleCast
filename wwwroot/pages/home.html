@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>StyleCast — Home</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { navy:'#1A2A4F', peach:'#F7A5A5' }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body class="min-h-screen bg-peach text-navy font-[Tahoma]">
+
+<!-- NAVBAR -->
+<header class="bg-navy text-peach shadow-md">
+    <nav class="relative flex items-center justify-between h-16 px-6">
+        <a href="/pages/home.html" class="flex items-center gap-3">
+            <img src="/images/logo.png" alt="StyleCast Logo" class="h-16 w-auto" />
+            <span class="font-extrabold text-xl tracking-wide">StyleCast</span>
+        </a>
+
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-6 items-center">
+            <a href="/pages/home.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Home</a>
+            <a href="/pages/explore.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Explore</a>
+            <a href="/pages/signin.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Sign in</a>
+        </div>
+    </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+
+    <section
+            id="weatherCard"
+            class="w-full max-w-sm bg-white/60 backdrop-blur rounded-2xl shadow-lg ring-1 ring-navy/10 p-8 text-center transition opacity-30"
+    >
+        <h1 class="text-3xl font-bold mb-4">Weather</h1>
+
+        <!-- BUTTONS -->
+        <div class="flex justify-center gap-2 mb-6">
+            <button class="hourBtn px-3 py-1 bg-navy text-peach rounded-md" data-mode="current">
+                Current
+            </button>
+            <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="3">3h</button>
+            <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="6">6h</button>
+            <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="9">9h</button>
+            <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="12">12h</button>
+        </div>
+
+        <!-- LOADING -->
+        <p id="loadingText" class="text-navy opacity-70">Loading...</p>
+
+        <!-- WEATHER DATA -->
+        <div id="weatherData" class="hidden mt-4 text-navy">
+            <p id="city" class="font-semibold"></p>
+            <p id="temperature"></p>
+            <p id="condition"></p>
+            <p id="humidity"></p>
+        </div>
+    </section>
+
+</main>
+
+<!-- WEATHER SCRIPT -->
+<script>
+    let userLat, userLon;
+
+    // Highlight logic
+    function highlight(btn) {
+        document.querySelectorAll(".hourBtn").forEach(b => {
+            b.classList.remove("bg-navy", "text-peach");
+            b.classList.add("bg-navy/60");
+        });
+        btn.classList.remove("bg-navy/60");
+        btn.classList.add("bg-navy", "text-peach");
+    }
+
+    async function fetchWeather(hours = null) {
+        const card = document.getElementById("weatherCard");
+        const loading = document.getElementById("loadingText");
+        const data = document.getElementById("weatherData");
+
+        loading.classList.remove("hidden");
+        loading.textContent = "Loading...";
+        data.classList.add("hidden");
+        card.style.opacity = "0.3";
+
+        let url;
+        if (hours === null) {
+            // CURRENT WEATHER → we ask backend for ONLY 1 hour
+            url = `/api/weather?lat=${userLat}&lon=${userLon}&hours=1`;
+        } else {
+            // FORECAST INTERVAL
+            url = `/api/weather?lat=${userLat}&lon=${userLon}&hours=${hours}`;
+        }
+
+        try {
+            const res = await fetch(url);
+            const weather = await res.json();
+
+            document.getElementById("city").innerText =
+                `Location: ${weather.location.city}`;
+
+            if (hours === null) {
+                // CURRENT weather = tempMin == tempMax
+                document.getElementById("temperature").innerText =
+                    `Current Temperature: ${weather.tempMin}°C`;
+            } else {
+                document.getElementById("temperature").innerText =
+                    `Temperature: Min ${weather.tempMin}°C / Max ${weather.tempMax}°C`;
+            }
+
+            document.getElementById("condition").innerText =
+                `Condition: ${weather.mainCondition}`;
+            document.getElementById("humidity").innerText =
+                `Humidity: ${weather.humidityAvg}%`;
+
+            loading.classList.add("hidden");
+            data.classList.remove("hidden");
+            card.style.opacity = "1";
+
+        } catch {
+            loading.textContent = "Failed to load weather data.";
+        }
+    }
+
+    // Button logic
+    document.querySelectorAll(".hourBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            highlight(btn);
+
+            const mode = btn.dataset.mode;
+            const hours = btn.dataset.hours;
+
+            if (mode === "current") fetchWeather(null);
+            else fetchWeather(hours);
+        });
+    });
+
+    // First get location
+    navigator.geolocation.getCurrentPosition(async pos => {
+        userLat = pos.coords.latitude;
+        userLon = pos.coords.longitude;
+
+        // On load → CURRENT weather
+        const currentBtn = document.querySelector('[data-mode="current"]');
+        highlight(currentBtn);
+        fetchWeather(null);
+    });
+</script>
+
+</body>
+</html>
