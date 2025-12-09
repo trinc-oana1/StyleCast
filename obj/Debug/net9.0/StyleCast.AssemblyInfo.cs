@@ -13,11 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StyleCast")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-<<<<<<< Updated upstream
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0af16b0adfb2088d9902560853bfcff344bf0601")]
-=======
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e4ff9ae91124b397cf6f74841509785c8888acf5")]
->>>>>>> Stashed changes
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5dfc3a4bd80b48cee44440e368a133ab9179765f")]
 [assembly: System.Reflection.AssemblyProductAttribute("StyleCast")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StyleCast")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

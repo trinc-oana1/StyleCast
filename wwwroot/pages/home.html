@@ -19,7 +19,6 @@
 
 <body class="min-h-screen bg-peach text-navy font-[Tahoma]">
 
-<!-- NAVBAR -->
 <header class="bg-navy text-peach shadow-md">
     <nav class="relative flex items-center justify-between h-16 px-6">
         <a href="/pages/home.html" class="flex items-center gap-3">
@@ -35,30 +34,22 @@
     </nav>
 </header>
 
-<!-- 0MAIN CONTENT -->
 <main class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+    <section id="weatherCard"
+             class="w-full max-w-sm bg-white/60 backdrop-blur rounded-2xl shadow-lg ring-1 ring-navy/10 p-8 text-center opacity-30 transition">
 
-    <section
-            id="weatherCard"
-            class="w-full max-w-sm bg-white/60 backdrop-blur rounded-2xl shadow-lg ring-1 ring-navy/10 p-8 text-center transition opacity-30"
-    >
         <h1 class="text-3xl font-bold mb-4">Weather</h1>
 
-        <!-- BUTTONS -->
         <div class="flex justify-center gap-2 mb-6">
-            <button class="hourBtn px-3 py-1 bg-navy text-peach rounded-md" data-mode="current">
-                Current
-            </button>
+            <button class="hourBtn px-3 py-1 bg-navy text-peach rounded-md" data-mode="current">Current</button>
             <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="3">3h</button>
             <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="6">6h</button>
             <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="9">9h</button>
             <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="12">12h</button>
         </div>
 
-        <!-- LOADING -->
         <p id="loadingText" class="text-navy opacity-70">Loading...</p>
 
-        <!-- WEATHER DATA -->
         <div id="weatherData" class="hidden mt-4 text-navy">
             <p id="city" class="font-semibold"></p>
             <p id="temperature"></p>
@@ -66,14 +57,14 @@
             <p id="humidity"></p>
         </div>
     </section>
-
 </main>
 
-<!-- WEATHER SCRIPT -->
+
 <script>
+
     let userLat, userLon;
 
-    // Highlight logic
+    // Button highlight
     function highlight(btn) {
         document.querySelectorAll(".hourBtn").forEach(b => {
             b.classList.remove("bg-navy", "text-peach");
@@ -83,6 +74,7 @@
         btn.classList.add("bg-navy", "text-peach");
     }
 
+    // Fetch weather from backend
     async function fetchWeather(hours = null) {
         const card = document.getElementById("weatherCard");
         const loading = document.getElementById("loadingText");
@@ -93,35 +85,28 @@
         data.classList.add("hidden");
         card.style.opacity = "0.3";
 
-        let url;
-        if (hours === null) {
-            // CURRENT WEATHER → we ask backend for ONLY 1 hour
-            url = `/api/weather?lat=${userLat}&lon=${userLon}&hours=1`;
-        } else {
-            // FORECAST INTERVAL
-            url = `/api/weather?lat=${userLat}&lon=${userLon}&hours=${hours}`;
-        }
+        const lat = userLat.toFixed(2);
+        const lon = userLon.toFixed(2);
+
+        let url = hours === null
+            ? `/api/weather?lat=${lat}&lon=${lon}&hours=1`
+            : `/api/weather?lat=${lat}&lon=${lon}&hours=${hours}`;
 
         try {
             const res = await fetch(url);
             const weather = await res.json();
 
-            document.getElementById("city").innerText =
-                `Location: ${weather.location.city}`;
+            document.getElementById("city").innerText = `Location: ${weather.location.city}`;
 
-            if (hours === null) {
-                // CURRENT weather = tempMin == tempMax
+            if (hours === null)
                 document.getElementById("temperature").innerText =
                     `Current Temperature: ${weather.tempMin}°C`;
-            } else {
+            else
                 document.getElementById("temperature").innerText =
                     `Temperature: Min ${weather.tempMin}°C / Max ${weather.tempMax}°C`;
-            }
 
-            document.getElementById("condition").innerText =
-                `Condition: ${weather.mainCondition}`;
-            document.getElementById("humidity").innerText =
-                `Humidity: ${weather.humidityAvg}%`;
+            document.getElementById("condition").innerText = `Condition: ${weather.mainCondition}`;
+            document.getElementById("humidity").innerText = `Humidity: ${weather.humidityAvg}%`;
 
             loading.classList.add("hidden");
             data.classList.remove("hidden");
@@ -132,7 +117,7 @@
         }
     }
 
-    // Button logic
+    // Button listeners
     document.querySelectorAll(".hourBtn").forEach(btn => {
         btn.addEventListener("click", () => {
             highlight(btn);
@@ -145,16 +130,19 @@
         });
     });
 
-    // First get location
-    navigator.geolocation.getCurrentPosition(async pos => {
-        userLat = pos.coords.latitude;
-        userLon = pos.coords.longitude;
+    // Get location (NO fallback)
+    navigator.geolocation.getCurrentPosition(pos => {
+        userLat = Number(pos.coords.latitude.toFixed(2));
+        userLon = Number(pos.coords.longitude.toFixed(2));
 
-        // On load → CURRENT weather
         const currentBtn = document.querySelector('[data-mode="current"]');
         highlight(currentBtn);
         fetchWeather(null);
+
+    }, () => {
+        alert("Location access is required to load weather.");
     });
+
 </script>
 
 </body>

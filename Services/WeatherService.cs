@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
 
 namespace StyleCast.Backend.Services
@@ -10,124 +11,83 @@ namespace StyleCast.Backend.Services
         public WeatherService(HttpClient httpClient, IConfiguration config)
         {
             _httpClient = httpClient;
-            _baseUrl = config["OpenMeteo:BaseUrl"] 
-                ?? "https://api.open-meteo.com/v1/forecast";
+            _baseUrl = config["OpenMeteo:BaseUrl"] ?? "https://api.open-meteo.com/v1/forecast";
         }
 
-        // -----------------------------
-        // 🔍 Reverse Geocoding (Get City)
-        // -----------------------------
+        // ---------------------------------------------------------
+        // Reverse Geocoding → Resolve City Name
+        // ---------------------------------------------------------
         private async Task<string> ResolveCityName(double lat, double lon)
         {
+            string url =
+                $"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={lat.ToString(CultureInfo.InvariantCulture)}&longitude={lon.ToString(CultureInfo.InvariantCulture)}&localityLanguage=en";
+
+            Console.WriteLine("🌍 Reverse geocoding URL: " + url);
+
             try
             {
-                string url =
-                    $"https://geocoding-api.open-meteo.com/v1/reverse?latitude={lat:F4}&longitude={lon:F4}&count=1";
+                var response = await _httpClient.GetAsync(url);
+                Console.WriteLine("Geo Status: " + response.StatusCode);
 
-                var response = await _httpClient.GetStringAsync(url);
-                var json = JsonNode.Parse(response)?.AsObject();
-                var results = json?["results"]?.AsArray();
+                response.EnsureSuccessStatusCode();
 
-                if (results != null && results.Count > 0)
-                    return results[0]!["name"]!.ToString();
+                var json = await response.Content.ReadAsStringAsync();
+                var root = JsonNode.Parse(json)?.AsObject();
+
+                var city = root?["city"]?.ToString()
+                           ?? root?["locality"]?.ToString()
+                           ?? root?["principalSubdivision"]?.ToString()
+                           ?? "Unknown";
+
+                return city;
             }
-            catch { }
-
-            return "Unknown Location";
-        }
-
-        // -----------------------------
-        // 🌡️ CURRENT WEATHER BUILDER
-        // -----------------------------
-        private object BuildCurrentWeather(JsonObject json, double lat, double lon, string city)
-        {
-            var hourly = json["hourly"]!.AsObject();
-            var timezone = json["timezone"]!.ToString();
-
-            var times = hourly["time"]!.AsArray()
-                .Select(t => DateTime.Parse(t!.ToString()))
-                .ToList();
-
-            // Convert ALL hourly timestamps to the local timezone
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(timezone);
-            var nowLocal = TimeZoneInfo.ConvertTime(DateTime.UtcNow, tz);
-
-            // pick the closest future hour
-            int idx = times.FindIndex(t => t >= nowLocal);
-            if (idx == -1) idx = times.Count - 1; // fallback
-
-            double temp = (double)hourly["temperature_2m"]![idx]!;
-            double feels = (double)hourly["apparent_temperature"]![idx]!;
-            int code = (int)hourly["weathercode"]![idx]!;
-            double humidity = (double)hourly["relative_humidity_2m"]![idx]!;
-            double wind = (double)hourly["windspeed_10m"]![idx]!;
-            double precipitation = (double)hourly["precipitation"]![idx]!;
-
-            return new
+            catch (Exception ex)
             {
-                location = new { city, latitude = lat, longitude = lon },
-                dateTimeStart = nowLocal.ToString("yyyy-MM-dd HH:mm"),
-                intervalHours = 1,
-                tempMin = temp,
-                tempMax = temp,
-                feelsLikeAvg = feels,
-                windAvg = wind,
-                humidityAvg = humidity,
-                rainChance = precipitation > 0.2 ? 100 : 0,
-                mainCondition = MapWeatherCode(code)
-            };
+                Console.WriteLine("❌ City lookup failed: " + ex.Message);
+                return "Unknown";
+            }
         }
 
-        // ---------------------------------------------------
-        // 🌤️ MAIN SERVICE: CURRENT or INTERVAL FORECAST
-        // ---------------------------------------------------
+
+        // ---------------------------------------------------------
+        // WEATHER SUMMARY SERVICE
+        // ---------------------------------------------------------
         public async Task<object> GetWeatherSummary(double lat, double lon, int hours = 6)
         {
-            var url = $"{_baseUrl}?latitude={lat}&longitude={lon}" +
-                      "&hourly=temperature_2m,apparent_temperature,precipitation,weathercode," +
-                      "windspeed_10m,relative_humidity_2m" +
-                      "&daily=sunrise,sunset" +
-                      "&timezone=auto";
+            string url =
+                $"{_baseUrl}?latitude={lat}&longitude={lon}" +
+                "&hourly=temperature_2m,apparent_temperature,precipitation,weathercode," +
+                "windspeed_10m,relative_humidity_2m" +
+                "&daily=sunrise,sunset" +
+                "&timezone=auto";
 
+            Console.WriteLine($"🌍 Requesting: {url}");
             var response = await _httpClient.GetStringAsync(url);
-            var root = JsonNode.Parse(response);
 
+            var root = JsonNode.Parse(response);
             if (root is JsonArray arr)
                 root = arr[0];
 
-            var json = root!.AsObject();
+            if (root is not JsonObject json)
+                throw new Exception("Invalid JSON root object.");
 
-            // --------------------------
-            // 🌍 Resolve City Dynamically
-            // --------------------------
-            string cityName = await ResolveCityName(lat, lon);
-
-            // --------------------------
-            // 🔥 If hours == 1 => CURRENT weather
-            // --------------------------
-            if (hours == 1)
-                return BuildCurrentWeather(json, lat, lon, cityName);
-
-
-            // ---------------------------------------------------
-            // 🌦️ FORECAST MODE (3h / 6h / 9h / 12h)
-            // ---------------------------------------------------
             var hourly = json["hourly"]!.AsObject();
+            var daily = json["daily"]!.AsObject();
 
-            var timezone = json["timezone"]!.ToString();
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(timezone);
-
-            // Convert local UTC → City Local Time
-            var nowLocal = TimeZoneInfo.ConvertTime(DateTime.UtcNow, tz);
-
+            // LOCAL TIME conversion
             var times = hourly["time"]!.AsArray()
-                .Select(t => DateTime.Parse(t!.ToString()))
+                .Select(t =>
+                {
+                    DateTime dt = DateTime.Parse(t!.ToString());
+                    return DateTime.SpecifyKind(dt, DateTimeKind.Local);
+                })
                 .ToList();
 
-            // local interval
+            DateTime now = DateTime.Now;
+
             var indices = times
                 .Select((t, i) => new { t, i })
-                .Where(x => x.t >= nowLocal && x.t <= nowLocal.AddHours(hours))
+                .Where(x => x.t >= now && x.t <= now.AddHours(hours))
                 .Select(x => x.i)
                 .ToList();
 
@@ -141,35 +101,39 @@ namespace StyleCast.Backend.Services
             var humidities = indices.Select(i => (double)hourly["relative_humidity_2m"]![i]!).ToList();
             var codes = indices.Select(i => (int)hourly["weathercode"]![i]!).ToList();
 
-            var tempMin = temps.Min();
-            var tempMax = temps.Max();
-            var feelsAvg = feels.Average();
-            var windAvg = winds.Average();
-            var humidityAvg = humidities.Average();
+            // Stats
+            double RoundHalf(double x) => Math.Round(x * 2, MidpointRounding.AwayFromZero) / 2;
 
-            var rainChance = Math.Round((double)rains.Count(r => r > 0.2) / rains.Count * 100, 0);
-            var mainCondition = MapWeatherCode(
+            // Main condition
+            string mainCondition = MapWeatherCode(
                 codes.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key
             );
 
-            return new
+            // Determine city (backend)
+            string city = await ResolveCityName(lat, lon);
+
+            var result = new
             {
-                location = new { city = cityName, latitude = lat, longitude = lon },
-                dateTimeStart = nowLocal.ToString("yyyy-MM-dd HH:mm"),
+                location = new
+                {
+                    city = city,
+                    latitude = lat,
+                    longitude = lon
+                },
+                dateTimeStart = now.ToString("yyyy-MM-ddTHH:mm:ss"),
                 intervalHours = hours,
-                tempMin,
-                tempMax,
-                feelsLikeAvg = feelsAvg,
-                windAvg = Math.Round(windAvg, 1),
-                humidityAvg = Math.Round(humidityAvg, 1),
-                rainChance,
-                mainCondition
+                tempMin = RoundHalf(temps.Min()),
+                tempMax = RoundHalf(temps.Max()),
+                feelsLikeAvg = RoundHalf(feels.Average()),
+                windAvg = Math.Round(winds.Average(), 1),
+                humidityAvg = Math.Round(humidities.Average(), 1),
+                rainChance = Math.Round((double)rains.Count(r => r > 0.2) / rains.Count * 100),
+                mainCondition = mainCondition
             };
+
+            return result;
         }
 
-        // -----------------------------
-        // ☁️ WEATHER CODE MAPPING
-        // -----------------------------
         private string MapWeatherCode(int code)
         {
             return code switch
