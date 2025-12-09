@@ -8,6 +8,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< Updated upstream
     <list default="true" id="3e864060-bea3-4eaf-8fda-3b681b66c2d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StyleCast/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StyleCast/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Services/WeatherService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Services/WeatherService.cs" afterDir="false" />
@@ -25,6 +26,9 @@
       <change beforePath="$PROJECT_DIR$/obj/Debug/net9.0/rjsmrazor.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net9.0/rjsmrazor.dswa.cache.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net9.0/rpswa.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net9.0/rpswa.dswa.cache.json" afterDir="false" />
     </list>
+=======
+    <list default="true" id="3e864060-bea3-4eaf-8fda-3b681b66c2d9" name="Changes" comment="" />
+>>>>>>> Stashed changes
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -92,6 +96,11 @@
       <workItem from="1762845947110" duration="2471000" />
       <workItem from="1762949747532" duration="31000" />
       <workItem from="1764844482578" duration="6590000" />
+<<<<<<< Updated upstream
+=======
+      <workItem from="1765217288334" duration="2555000" />
+      <workItem from="1765225499568" duration="5419000" />
+>>>>>>> Stashed changes
     </task>
     <task id="LOCAL-00001" summary="commit weather api">
       <option name="closed" value="true" />
