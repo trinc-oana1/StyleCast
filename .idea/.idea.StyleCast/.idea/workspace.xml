@@ -10,6 +10,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3e864060-bea3-4eaf-8fda-3b681b66c2d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.StyleCast/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.StyleCast/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/WeatherService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Services/WeatherService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/Debug/net9.0/StyleCast.deps.json" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net9.0/StyleCast.deps.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/Debug/net9.0/StyleCast.dll" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net9.0/StyleCast.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/Debug/net9.0/StyleCast.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net9.0/StyleCast.pdb" afterDir="false" />
@@ -45,11 +46,15 @@
       <change beforePath="$PROJECT_DIR$/obj/project.packagespec.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.packagespec.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.restore.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wwwroot/pages/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/wwwroot/pages/home.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DpaMonitoringSettings">
+    <option name="firstShow" value="false" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -89,6 +94,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.StyleCast: https.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -103,6 +109,24 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RunManager">
+    <configuration name="StyleCast: https" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
+      <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/StyleCast.csproj" />
+      <option name="LAUNCH_PROFILE_TFM" value="net9.0" />
+      <option name="LAUNCH_PROFILE_NAME" value="https" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="USE_MONO" value="0" />
+      <option name="RUNTIME_ARGUMENTS" value="" />
+      <option name="GENERATE_APPLICATIONHOST_CONFIG" value="1" />
+      <option name="SHOW_IIS_EXPRESS_OUTPUT" value="0" />
+      <option name="SEND_DEBUG_REQUEST" value="1" />
+      <option name="ADDITIONAL_IIS_EXPRESS_ARGUMENTS" value="" />
+      <option name="AUTO_ATTACH_CHILDREN" value="0" />
+      <method v="2">
+        <option name="Build" />
+      </method>
+    </configuration>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -117,6 +141,7 @@
       <workItem from="1764844482578" duration="6590000" />
       <workItem from="1765217288334" duration="2555000" />
       <workItem from="1765225499568" duration="4810000" />
+      <workItem from="1765315282916" duration="3035000" />
     </task>
     <task id="LOCAL-00001" summary="commit weather api">
       <option name="closed" value="true" />
@@ -138,5 +163,23 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="commit weather api" />
     <option name="LAST_COMMIT_MESSAGE" value="commit weather api" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.OperationCanceledException" breakIfHandledByOtherCode="false" displayValue="System.OperationCanceledException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.Tasks.TaskCanceledException" breakIfHandledByOtherCode="false" displayValue="System.Threading.Tasks.TaskCanceledException" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

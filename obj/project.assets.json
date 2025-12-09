@@ -5511,19 +5511,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\trinc\\.nuget\\packages\\": {}
+    "/Users/missclick/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\UTCN_sem1_an4\\StyleCast_v2\\StyleCast\\StyleCast.csproj",
+      "projectUniqueName": "/Users/missclick/RiderProjects/StyleCast/StyleCast.csproj",
       "projectName": "StyleCast",
-      "projectPath": "D:\\UTCN_sem1_an4\\StyleCast_v2\\StyleCast\\StyleCast.csproj",
-      "packagesPath": "C:\\Users\\trinc\\.nuget\\packages\\",
-      "outputPath": "D:\\UTCN_sem1_an4\\StyleCast_v2\\StyleCast\\obj\\",
+      "projectPath": "/Users/missclick/RiderProjects/StyleCast/StyleCast.csproj",
+      "packagesPath": "/Users/missclick/.nuget/packages/",
+      "outputPath": "/Users/missclick/RiderProjects/StyleCast/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\trinc\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/missclick/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -5595,7 +5595,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Users\\trinc\\.dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
