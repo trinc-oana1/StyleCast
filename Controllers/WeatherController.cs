@@ -8,9 +8,9 @@ namespace StyleCast.Backend.Controllers
     public class WeatherController : ControllerBase
     {
         private readonly WeatherService _weatherService;
-        private readonly CacheService _cacheService;
+        private readonly ICacheService _cacheService;
 
-        public WeatherController(WeatherService weatherService, CacheService cacheService)
+        public WeatherController(WeatherService weatherService, ICacheService cacheService)
         {
             _weatherService = weatherService;
             _cacheService = cacheService;
@@ -23,7 +23,7 @@ namespace StyleCast.Backend.Controllers
             {
                 var data = await _weatherService.GetWeatherSummary(lat, lon, hours);
                 
-                string cacheKey = $"weather_{hours}";
+                string cacheKey = $"weather_{lat}_{lon}_{hours}";
                 _cacheService.SetData(cacheKey, data, DateTimeOffset.Now.AddDays(10));
                 
                 return Ok(data);
