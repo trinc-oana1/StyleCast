@@ -10,6 +10,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<WeatherService>();
 //aici adaugam si cache service cand o sa fie facut
+builder.Services.AddMemoryCache(); // to allow for local memory cache
+builder.Services.AddSingleton<ICacheService, CacheService>();
 
 // Database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
