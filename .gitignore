@@ -1,4 +1,9 @@
-[Bb]in/
-[Oo]bj/
+bin/
+Bin/
+
+obj/
+Obj/
 
 .idea/
+
+node_modules/
