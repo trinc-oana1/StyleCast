@@ -1,0 +1,9 @@
+bin/
+Bin/
+
+obj/
+Obj/
+
+.idea/
+
+node_modules/
