@@ -19,6 +19,13 @@
 
 <body class="min-h-screen bg-peach text-navy font-[Tahoma]">
 
+<!-- OFFLINE BANNER -->
+<div id="offlineBanner"
+     class="hidden sticky top-0 z-50 bg-peach text-navy border-b border-navy/30 px-4 py-2 text-center font-bold">
+    Offline – datele pot fi vechi!
+</div>
+
+
 <header class="bg-navy text-peach shadow-md">
     <nav class="relative flex items-center justify-between h-16 px-6">
         <a href="/pages/home.html" class="flex items-center gap-3">
@@ -64,6 +71,36 @@
 
     let userLat, userLon;
 
+    // OFFLINE LOGIC
+    const offlineBanner = document.getElementById("offlineBanner");
+
+    function updateOnlineStatus() {
+        if (navigator.onLine) {
+            offlineBanner.classList.add("hidden");
+
+            // dacă deja avem locația, putem reîncerca să încărcăm vremea când revine netul
+            if (typeof userLat === "number" && typeof userLon === "number") {
+                const activeBtn = document.querySelector(".hourBtn.bg-navy");
+                if (activeBtn) {
+                    const mode = activeBtn.dataset.mode;
+                    const hours = activeBtn.dataset.hours;
+                    if (mode === "current") fetchWeather(null);
+                    else fetchWeather(hours);
+                } else {
+                    fetchWeather(null);
+                }
+            }
+        } else {
+            offlineBanner.classList.remove("hidden");
+        }
+    }
+
+    // verificare inițială + ascultare schimbări
+    updateOnlineStatus();
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+
+
     // Button highlight
     function highlight(btn) {
         document.querySelectorAll(".hourBtn").forEach(b => {
@@ -80,6 +117,15 @@
         const loading = document.getElementById("loadingText");
         const data = document.getElementById("weatherData");
 
+        // dacă e offline, nu mai încercăm request (și arătăm mesaj clar)
+        if (!navigator.onLine) {
+            loading.classList.remove("hidden");
+            loading.textContent = "Offline – datele pot fi vechi!";
+            data.classList.add("hidden");
+            card.style.opacity = "0.3";
+            return;
+        }
+
         loading.classList.remove("hidden");
         loading.textContent = "Loading...";
         data.classList.add("hidden");
@@ -94,6 +140,10 @@
 
         try {
             const res = await fetch(url);
+
+            // dacă backend-ul răspunde cu eroare (ex: 500), să nu crape json()
+            if (!res.ok) throw new Error("Request failed");
+
             const weather = await res.json();
 
             document.getElementById("city").innerText = `Location: ${weather.location.city}`;
