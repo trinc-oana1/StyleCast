@@ -7,3 +7,18 @@ Obj/
 .idea/
 
 node_modules/
+
+.idea/.idea.StyleCast/.idea/workspace.xml
+bin/Debug/net9.0/StyleCast.dll
+bin/Debug/net9.0/StyleCast.pdb
+obj/Debug/net9.0/ref/StyleCast.dll
+obj/Debug/net9.0/refint/StyleCast.dll
+obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
+obj/Debug/net9.0/rjsmrazor.dswa.cache.json
+obj/Debug/net9.0/StyleCast.AssemblyInfo.cs
+obj/Debug/net9.0/StyleCast.AssemblyInfoInputs.cache
+obj/Debug/net9.0/StyleCast.dll
+obj/Debug/net9.0/StyleCast.pdb
+obj/Debug/net9.0/StyleCast.sourcelink.json
+/.idea/.idea.StyleCast/.idea
+/bin/Debug
