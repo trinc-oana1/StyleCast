@@ -7,3 +7,22 @@ Obj/
 .idea/
 
 node_modules/
+# JetBrains IDE files
+.idea/
+*.iml
+
+# .NET build artifacts
+obj/
+bin/
+
+# NuGet / project restore artifacts (redundant if obj/ is ignored, but explicit)
+**/project.assets.json
+**/project.nuget.cache
+**/*.nuget.g.props
+**/*.nuget.g.targets
+**/*.csproj.nuget.dgspec.json
+**/project.packagespec.json
+
+# Rider-specific restore/model files
+**/rider.project.model.nuget.info
+**/rider.project.restore.info
