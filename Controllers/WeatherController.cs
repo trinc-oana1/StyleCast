@@ -17,27 +17,21 @@ namespace StyleCast.Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetWeather([FromQuery] double lat, [FromQuery] double lon, [FromQuery] int hours = 6)
+        public async Task<IActionResult> GetWeather(
+            [FromQuery] double lat,
+            [FromQuery] double lon,
+            [FromQuery] int hours = 6)
         {
-            string cacheKey = $"weather_{lat}_{lon}_{hours}";
             try
             {
                 var data = await _weatherService.GetWeatherSummary(lat, lon, hours);
-                _cacheService.SetData(cacheKey, data, DateTimeOffset.Now.AddDays(10));
-                
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                var cachedData = _cacheService.GetData<object>(cacheKey);
-
-                if (cachedData != null)
-                {
-                    return Ok(cachedData);
-                }
-                
                 return BadRequest(new { error = ex.Message });
             }
         }
+        
     }
 }
