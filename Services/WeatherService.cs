@@ -7,11 +7,17 @@ namespace StyleCast.Backend.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
+        private readonly ICacheService _cacheService;
 
-        public WeatherService(HttpClient httpClient, IConfiguration config)
+        public WeatherService(
+            HttpClient httpClient,
+            IConfiguration config,
+            ICacheService cacheService)
         {
             _httpClient = httpClient;
-            _baseUrl = config["OpenMeteo:BaseUrl"] ?? "https://api.open-meteo.com/v1/forecast";
+            _cacheService = cacheService;
+            _baseUrl = config["OpenMeteo:BaseUrl"]
+                       ?? "https://api.open-meteo.com/v1/forecast";
         }
 
         // ---------------------------------------------------------
@@ -20,118 +26,158 @@ namespace StyleCast.Backend.Services
         private async Task<string> ResolveCityName(double lat, double lon)
         {
             string url =
-                $"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={lat.ToString(CultureInfo.InvariantCulture)}&longitude={lon.ToString(CultureInfo.InvariantCulture)}&localityLanguage=en";
-
-            Console.WriteLine("🌍 Reverse geocoding URL: " + url);
+                $"https://api.bigdatacloud.net/data/reverse-geocode-client" +
+                $"?latitude={lat.ToString(CultureInfo.InvariantCulture)}" +
+                $"&longitude={lon.ToString(CultureInfo.InvariantCulture)}" +
+                $"&localityLanguage=en";
 
             try
             {
                 var response = await _httpClient.GetAsync(url);
-                Console.WriteLine("Geo Status: " + response.StatusCode);
-
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
                 var root = JsonNode.Parse(json)?.AsObject();
 
-                var city = root?["city"]?.ToString()
-                           ?? root?["locality"]?.ToString()
-                           ?? root?["principalSubdivision"]?.ToString()
-                           ?? "Unknown";
-
-                return city;
+                return root?["city"]?.ToString()
+                       ?? root?["locality"]?.ToString()
+                       ?? root?["principalSubdivision"]?.ToString()
+                       ?? "Unknown";
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine("❌ City lookup failed: " + ex.Message);
                 return "Unknown";
             }
         }
-
 
         // ---------------------------------------------------------
         // WEATHER SUMMARY SERVICE
         // ---------------------------------------------------------
         public async Task<object> GetWeatherSummary(double lat, double lon, int hours = 6)
         {
-            string url =
-                $"{_baseUrl}?latitude={lat}&longitude={lon}" +
-                "&hourly=temperature_2m,apparent_temperature,precipitation,weathercode," +
-                "windspeed_10m,relative_humidity_2m" +
-                "&daily=sunrise,sunset" +
-                "&timezone=auto";
+            string cacheKey = $"weather:{lat}:{lon}:{hours}";
 
-            Console.WriteLine($"🌍 Requesting: {url}");
-            var response = await _httpClient.GetStringAsync(url);
-
-            var root = JsonNode.Parse(response);
-            if (root is JsonArray arr)
-                root = arr[0];
-
-            if (root is not JsonObject json)
-                throw new Exception("Invalid JSON root object.");
-
-            var hourly = json["hourly"]!.AsObject();
-            var daily = json["daily"]!.AsObject();
-
-            // LOCAL TIME conversion
-            var times = hourly["time"]!.AsArray()
-                .Select(t =>
-                {
-                    DateTime dt = DateTime.Parse(t!.ToString());
-                    return DateTime.SpecifyKind(dt, DateTimeKind.Local);
-                })
-                .ToList();
-
-            DateTime now = DateTime.Now;
-
-            var indices = times
-                .Select((t, i) => new { t, i })
-                .Where(x => x.t >= now && x.t <= now.AddHours(hours))
-                .Select(x => x.i)
-                .ToList();
-
-            if (!indices.Any())
-                throw new Exception("No hourly data available for the given range.");
-
-            var temps = indices.Select(i => (double)hourly["temperature_2m"]![i]!).ToList();
-            var feels = indices.Select(i => (double)hourly["apparent_temperature"]![i]!).ToList();
-            var winds = indices.Select(i => (double)hourly["windspeed_10m"]![i]!).ToList();
-            var rains = indices.Select(i => (double)hourly["precipitation"]![i]!).ToList();
-            var humidities = indices.Select(i => (double)hourly["relative_humidity_2m"]![i]!).ToList();
-            var codes = indices.Select(i => (int)hourly["weathercode"]![i]!).ToList();
-
-            // Stats
-            double RoundHalf(double x) => Math.Round(x * 2, MidpointRounding.AwayFromZero) / 2;
-
-            // Main condition
-            string mainCondition = MapWeatherCode(
-                codes.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key
-            );
-
-            // Determine city (backend)
-            string city = await ResolveCityName(lat, lon);
-
-            var result = new
+            try
             {
-                location = new
-                {
-                    city = city,
-                    latitude = lat,
-                    longitude = lon
-                },
-                dateTimeStart = now.ToString("yyyy-MM-ddTHH:mm:ss"),
-                intervalHours = hours,
-                tempMin = RoundHalf(temps.Min()),
-                tempMax = RoundHalf(temps.Max()),
-                feelsLikeAvg = RoundHalf(feels.Average()),
-                windAvg = Math.Round(winds.Average(), 1),
-                humidityAvg = Math.Round(humidities.Average(), 1),
-                rainChance = Math.Round((double)rains.Count(r => r > 0.2) / rains.Count * 100),
-                mainCondition = mainCondition
-            };
+                string url =
+                    $"{_baseUrl}?latitude={lat}&longitude={lon}" +
+                    "&hourly=temperature_2m,apparent_temperature,precipitation,weathercode," +
+                    "windspeed_10m,relative_humidity_2m" +
+                    "&daily=sunrise,sunset" +
+                    "&timezone=auto";
 
-            return result;
+                var response = await _httpClient.GetStringAsync(url);
+
+                var root = JsonNode.Parse(response);
+                if (root is JsonArray arr)
+                    root = arr[0];
+
+                if (root is not JsonObject json)
+                    throw new Exception("Invalid JSON root object.");
+
+                var hourly = json["hourly"]!.AsObject();
+
+                // Parse hourly times (1 value = 1 hour)
+                var times = hourly["time"]!.AsArray()
+                    .Select(t =>
+                    {
+                        DateTime dt = DateTime.Parse(t!.ToString());
+                        return DateTime.SpecifyKind(dt, DateTimeKind.Local);
+                    })
+                    .ToList();
+                
+                var nowHour = DateTime.Now
+                    .AddMinutes(-DateTime.Now.Minute)
+                    .AddSeconds(-DateTime.Now.Second);
+
+                int startIndex = times.FindIndex(t => t >= nowHour);
+
+                if (startIndex < 0)
+                    startIndex = 0;
+
+                // take EXACTLY N hours
+                var indices = Enumerable
+                    .Range(
+                        startIndex,
+                        Math.Min(hours, times.Count - startIndex)
+                    )
+                    .ToList();
+
+                if (!indices.Any())
+                    throw new Exception("No hourly data available for the given range.");
+
+                var temps = indices.Select(i => (double)hourly["temperature_2m"]![i]!).ToList();
+                var feels = indices.Select(i => (double)hourly["apparent_temperature"]![i]!).ToList();
+                var winds = indices.Select(i => (double)hourly["windspeed_10m"]![i]!).ToList();
+                var rains = indices.Select(i => (double)hourly["precipitation"]![i]!).ToList();
+                var humidities = indices.Select(i => (double)hourly["relative_humidity_2m"]![i]!).ToList();
+                var codes = indices.Select(i => (int)hourly["weathercode"]![i]!).ToList();
+
+                //verificare loguri
+                
+                Console.WriteLine("=== WEATHER DEBUG ===");
+                Console.WriteLine($"Coords: {lat}, {lon}");
+                Console.WriteLine($"Start index: {startIndex}");
+                Console.WriteLine("Times:");
+                times.Skip(startIndex).Take(hours).ToList()
+                    .ForEach(t => Console.WriteLine(t));
+
+                Console.WriteLine("Temperatures:");
+                temps.ForEach(t => Console.WriteLine(t));
+
+                Console.WriteLine($"Min: {temps.Min()}");
+                Console.WriteLine($"Max: {temps.Max()}");
+                Console.WriteLine("=====================");
+
+                //stop verificare loguri
+                
+                string mainCondition = MapWeatherCode(
+                    codes.GroupBy(x => x)
+                         .OrderByDescending(g => g.Count())
+                         .First().Key
+                );
+                
+
+                string city = await ResolveCityName(lat, lon);
+
+                var result = new
+                {
+                    location = new
+                    {
+                        city,
+                        latitude = lat,
+                        longitude = lon
+                    },
+                    dateTimeStart = times[startIndex].ToString("yyyy-MM-ddTHH:mm:ss"),
+                    intervalHours = hours,
+                    tempMin = temps.Min(),
+                    tempMax = temps.Max(),
+                    feelsLikeAvg = feels.Average(),
+                    windAvg = Math.Round(winds.Average(), 1),
+                    humidityAvg = Math.Round(humidities.Average(), 1),
+                    rainChance = Math.Round(
+                        (double)rains.Count(r => r > 0.2) / rains.Count * 100
+                    ),
+                    mainCondition
+                };
+
+                // cache on success
+                _cacheService.SetData(
+                    cacheKey,
+                    result,
+                    DateTimeOffset.Now.AddHours(1)
+                );
+
+                return result;
+            }
+            catch (HttpRequestException)
+            {
+                var cached = _cacheService.GetData<object>(cacheKey);
+                if (cached != null)
+                    return cached;
+
+                throw;
+            }
         }
 
         private string MapWeatherCode(int code)

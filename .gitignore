@@ -7,18 +7,22 @@ Obj/
 .idea/
 
 node_modules/
+# JetBrains IDE files
+.idea/
+*.iml
 
-.idea/.idea.StyleCast/.idea/workspace.xml
-bin/Debug/net9.0/StyleCast.dll
-bin/Debug/net9.0/StyleCast.pdb
-obj/Debug/net9.0/ref/StyleCast.dll
-obj/Debug/net9.0/refint/StyleCast.dll
-obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
-obj/Debug/net9.0/rjsmrazor.dswa.cache.json
-obj/Debug/net9.0/StyleCast.AssemblyInfo.cs
-obj/Debug/net9.0/StyleCast.AssemblyInfoInputs.cache
-obj/Debug/net9.0/StyleCast.dll
-obj/Debug/net9.0/StyleCast.pdb
-obj/Debug/net9.0/StyleCast.sourcelink.json
-/.idea/.idea.StyleCast/.idea
-/bin/Debug
+# .NET build artifacts
+obj/
+bin/
+
+# NuGet / project restore artifacts (redundant if obj/ is ignored, but explicit)
+**/project.assets.json
+**/project.nuget.cache
+**/*.nuget.g.props
+**/*.nuget.g.targets
+**/*.csproj.nuget.dgspec.json
+**/project.packagespec.json
+
+# Rider-specific restore/model files
+**/rider.project.model.nuget.info
+**/rider.project.restore.info
