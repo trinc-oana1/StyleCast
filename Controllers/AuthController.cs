@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StyleCast.Backend.Data;
 using StyleCast.Backend.Models;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -58,7 +61,34 @@ namespace StyleCast.Backend.Controllers
             if (existing == null)
                 return Unauthorized(new { message = "Invalid email or password" });
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, existing.Email),
+                new Claim(ClaimTypes.NameIdentifier, existing.Id.ToString()) 
+            };
+            
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true, // Keep user logged in even if browser closes
+                ExpiresUtc = DateTime.UtcNow.AddDays(7)
+            };
+            
+            // create encrypted cookie
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+            
             return Ok(new { message = "Login successful" });
+        }
+        
+        // Logout
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Ok(new { message = "Logout successful" });
         }
     }
 }

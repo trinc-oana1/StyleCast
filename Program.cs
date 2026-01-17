@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using StyleCast.Backend.Data;
 using StyleCast.Backend.Services;
@@ -16,6 +17,14 @@ builder.Services.AddSingleton<ICacheService, CacheService>();
 // Database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Page to redirect to if not logged in
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/pages/signin.html"; // Redirect here if not authenticated
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    });
 
 // Enable CORS for the frontend
 builder.Services.AddCors(options =>
@@ -39,6 +48,28 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value?.ToLower();
+
+    // allow access only to signin and signout page
+    bool isHtmlPage = path == "/" || (path != null && path.EndsWith(".html"));
+    bool isPublicPage = path != null && (path.Contains("/pages/signin.html") || path.Contains("/pages/register.html")); 
+
+    if (isHtmlPage && !isPublicPage)
+    {
+        // If user is not authenticated, redirect to login
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            context.Response.Redirect("/pages/signin.html");
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.UseDefaultFiles();  // looking for index.html
 app.UseStaticFiles();   // using from wwwroot
