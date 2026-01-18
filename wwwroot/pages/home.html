@@ -3,14 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
     <title>StyleCast — Home</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { navy:'#1A2A4F', peach:'#F7A5A5' }
+                    colors: {
+                        navy:'#1A2A4F',
+                        peach:'#F7A5A5'
+                    }
                 }
             }
         };
@@ -19,34 +24,51 @@
 
 <body class="min-h-screen bg-peach text-navy font-[Tahoma]">
 
-<!-- OFFLINE BANNER -->
+<!--
+    OFFLINE BANNER
+    - Visible only when the application detects no internet connection
+    - Used to inform the user that register cannot be performed without network access
+-->
 <div id="offlineBanner"
      class="hidden sticky top-0 z-50 bg-peach text-navy border-b border-navy/30 px-4 py-2 text-center font-bold">
-    Offline – datele pot fi vechi!
+    Offline — waiting for a connection...
 </div>
 
-
+<!-- NAVBAR -->
 <header class="bg-navy text-peach shadow-md">
     <nav class="relative flex items-center justify-between h-16 px-6">
+
         <a href="/pages/home.html" class="flex items-center gap-3">
             <img src="/images/logo.png" alt="StyleCast Logo" class="h-16 w-auto" />
             <span class="font-extrabold text-xl tracking-wide">StyleCast</span>
         </a>
-
+        
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-6 items-center">
-            <a href="/pages/home.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Home</a>
-            <a href="/pages/explore.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Explore</a>
-            <a href="/pages/signin.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Sign in</a>
         </div>
     </nav>
 </header>
 
+<!-- MAIN CONTENT -->
 <main class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+
+    
+    <!-- WEATHER CARD -->
     <section id="weatherCard"
              class="w-full max-w-sm bg-white/60 backdrop-blur rounded-2xl shadow-lg ring-1 ring-navy/10 p-8 text-center opacity-30 transition">
+        
+        <h1 class="text-3xl font-bold mb-2">Weather</h1>
 
-        <h1 class="text-3xl font-bold mb-4">Weather</h1>
+        <!--
+            WEATHER ICON
+            - Updated dynamically based on weather condition returned from backend.
+            - Default icon is sun.
+        -->
+        <img id="weatherIcon"
+             src="/images/sun.png"
+             alt="Weather icon"
+             class="mx-auto h-20 w-20 my-3" />
 
+        <!-- TIME RANGE BUTTONS -->
         <div class="flex justify-center gap-2 mb-6">
             <button class="hourBtn px-3 py-1 bg-navy text-peach rounded-md" data-mode="current">Current</button>
             <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="3">3h</button>
@@ -55,144 +77,353 @@
             <button class="hourBtn px-3 py-1 bg-navy/60 text-peach rounded-md" data-hours="12">12h</button>
         </div>
 
+        <!-- Loading / status text -->
         <p id="loadingText" class="text-navy opacity-70">Loading...</p>
 
+        <!--
+            WEATHER DATA AREA 
+            - Contains city, temperature, condition, humidity.
+            - Also includes outfit suggestion icons.
+        -->
         <div id="weatherData" class="hidden mt-4 text-navy">
             <p id="city" class="font-semibold"></p>
             <p id="temperature"></p>
             <p id="condition"></p>
             <p id="humidity"></p>
+
+            <!--
+                OUTFIT ICONS AREA
+                - We generate outfit suggestions based on temperature + condition + wind.
+                - Icons are appended dynamically 
+            -->
+            <div class="mt-4">
+                <p class="font-semibold mb-2">Outfit suggestion:</p>
+                <div id="outfitRow" class="flex flex-wrap justify-center gap-3"></div>
+            </div>
         </div>
     </section>
 </main>
 
 
 <script>
+    window.addEventListener("DOMContentLoaded", () => {
 
-    let userLat, userLon;
+        /*
+            GLOBAL STATE
+            - userLat/userLon are set using browser Geolocation.
+            - We need them in order to request weather from backend.
+        */
+        let userLat, userLon;
 
-    // OFFLINE LOGIC
-    const offlineBanner = document.getElementById("offlineBanner");
+        /*
+            OFFLINE BANNER HELPERS
+            - showOfflineBanner(): displays the banner 
+            - hideOfflineBanner(): hides the banner
+        */
+        const offlineBanner = document.getElementById("offlineBanner");
 
-    function updateOnlineStatus() {
-        if (navigator.onLine) {
-            offlineBanner.classList.add("hidden");
-
-            // dacă deja avem locația, putem reîncerca să încărcăm vremea când revine netul
-            if (typeof userLat === "number" && typeof userLon === "number") {
-                const activeBtn = document.querySelector(".hourBtn.bg-navy");
-                if (activeBtn) {
-                    const mode = activeBtn.dataset.mode;
-                    const hours = activeBtn.dataset.hours;
-                    if (mode === "current") fetchWeather(null);
-                    else fetchWeather(hours);
-                } else {
-                    fetchWeather(null);
-                }
-            }
-        } else {
+        function showOfflineBanner(text = "Offline — waiting for a connection...") {
+            offlineBanner.textContent = text;
             offlineBanner.classList.remove("hidden");
         }
-    }
 
-    // verificare inițială + ascultare schimbări
-    updateOnlineStatus();
-    window.addEventListener("online", updateOnlineStatus);
-    window.addEventListener("offline", updateOnlineStatus);
+        function hideOfflineBanner() {
+            offlineBanner.classList.add("hidden");
+        }
+
+        /*
+            ONLINE/OFFLINE STATUS HANDLING
+            - When online: hide banner and try to refresh weather based on selected button
+            - When offline: show banner
+        */
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                hideOfflineBanner();
+
+                // If we already have coordinates, we can re-fetch weather automatically
+                if (typeof userLat === "number" && typeof userLon === "number") {
+                    const activeBtn = document.querySelector(".hourBtn.bg-navy");
+                    if (activeBtn) {
+                        const mode = activeBtn.dataset.mode;
+                        const hours = activeBtn.dataset.hours;
+
+                        if (mode === "current") fetchWeather(null);
+                        else fetchWeather(hours);
+                    } else {
+                        // Default to current if no active button found
+                        fetchWeather(null);
+                    }
+                }
+            } else {
+                showOfflineBanner();
+            }
+        }
+
+        // Listen to browser online/offline events
+        window.addEventListener("online", updateOnlineStatus);
+        window.addEventListener("offline", updateOnlineStatus);
+
+        // Initial status check at page load
+        updateOnlineStatus();
 
 
-    // Button highlight
-    function highlight(btn) {
-        document.querySelectorAll(".hourBtn").forEach(b => {
-            b.classList.remove("bg-navy", "text-peach");
-            b.classList.add("bg-navy/60");
-        });
-        btn.classList.remove("bg-navy/60");
-        btn.classList.add("bg-navy", "text-peach");
-    }
+        /*
+            BUTTON UI HELPER
+            - Visually highlights the selected time range button.
+        */
+        function highlight(btn) {
+            document.querySelectorAll(".hourBtn").forEach(b => {
+                b.classList.remove("bg-navy", "text-peach");
+                b.classList.add("bg-navy/60");
+            });
 
-    // Fetch weather from backend
-    async function fetchWeather(hours = null) {
-        const card = document.getElementById("weatherCard");
-        const loading = document.getElementById("loadingText");
-        const data = document.getElementById("weatherData");
+            btn.classList.remove("bg-navy/60");
+            btn.classList.add("bg-navy", "text-peach");
+        }
 
-        // dacă e offline, nu mai încercăm request (și arătăm mesaj clar)
-        if (!navigator.onLine) {
+        /*
+            WEATHER ICON MAPPING
+            - Converts backend "mainCondition" into an icon file.
+            - Special case: blizzard (snow/showers + strong wind).
+        */
+        function pickIcon(mainCondition, windAvg) {
+            const w = Number(windAvg ?? 0);
+
+            // Blizzard detection: snow-like condition + strong wind threshold
+            if ((mainCondition === "Snow" || mainCondition === "Showers") && w >= 45) {
+                return "/images/blizzard.png";
+            }
+
+            // Normal condition 
+            switch (mainCondition) {
+                case "Clear": return "/images/sun.png";
+                case "Partly Cloudy": return "/images/sun_cloud.png";
+                case "Overcast": return "/images/overcast.png";
+                case "Fog": return "/images/fog.png";
+                case "Drizzle": return "/images/drizzle.png";
+                case "Rain": return "/images/rain.png";
+                case "Showers": return "/images/rain.png";
+                case "Snow": return "/images/snow.png";
+                case "Thunderstorm": return "/images/storm.png";
+                default: return "/images/sun_cloud.png"; 
+            }
+        }
+
+        /*
+            OUTFIT LOGIC
+            - Suggests clothing items as icons based on:
+              1) temperature ranges
+              2) condition adjustments (rain/snow/storm)
+              3) wind adjustments
+        */
+        function pickOutfit(tempC, mainCondition, windAvg) {
+            const t = Number(tempC ?? 0);
+            const w = Number(windAvg ?? 0);
+
+            // Base outfit based on temperature
+            let items = [];
+            if (t >= 25) {
+                items = ["tshirt.png", "dress.png", "sandals.png"];
+            } else if (t >= 18) {
+                items = ["tshirt.png", "pants.png", "sneakers.png"];
+            } else if (t >= 10) {
+                items = ["sweater.png", "jacket.png", "pants.png", "sneakers.png"];
+            } else if (t >= 0) {
+                items = ["puffer.png", "pants.png", "boots.png", "hat.png"];
+            } else {
+                items = ["puffer.png", "pants.png", "boots.png", "hat.png", "gloves.png"];
+            }
+
+            // Condition-based adjustments
+            const rainy = (mainCondition === "Rain" || mainCondition === "Showers" || mainCondition === "Drizzle");
+            const snowy = (mainCondition === "Snow");
+            const stormy = (mainCondition === "Thunderstorm");
+
+            // If rain or storm
+            if (rainy || stormy) {
+                items.push("jacket.png", "boots.png");
+            }
+
+            // If snow
+            if (snowy) {
+                items.push("gloves.png", "hat.png", "boots.png", "puffer.png");
+            }
+
+            // Blizzard
+            if ((mainCondition === "Snow" || mainCondition === "Showers") && w >= 45) {
+                items.push("gloves.png", "hat.png", "boots.png", "puffer.png");
+            }
+
+            // Strong wind
+            if (w >= 35) {
+                items.push("jacket.png");
+            }
+
+            // Remove duplicates (e.g., jacket added twice) and build full image paths
+            items = [...new Set(items)];
+            return items.map(x => `/images/${x}`);
+        }
+
+        /*
+            RENDER OUTFIT ICONS
+            - Clears the outfit row and appends <img> for each suggested item.
+        */
+        function renderOutfitIcons(iconPaths) {
+            const row = document.getElementById("outfitRow");
+            row.innerHTML = "";
+
+            iconPaths.forEach(src => {
+                const img = document.createElement("img");
+                img.src = src;
+                img.alt = "Outfit item";
+                img.className = "h-12 w-12 drop-shadow";
+                row.appendChild(img);
+            });
+        }
+
+        /*
+            FETCH WEATHER FROM BACKEND
+            - Calls the backend endpoint:
+                /api/weather?lat=..&lon=..&hours=..
+            - Uses "hours=null" as "Current" mode (hours=1).
+            - Updates UI (text + icons) after response.
+        */
+        async function fetchWeather(hours = null) {
+            const card = document.getElementById("weatherCard");
+            const loading = document.getElementById("loadingText");
+            const data = document.getElementById("weatherData");
+
+            // If offline, do not attempt a request
+            if (!navigator.onLine) {
+                showOfflineBanner();
+                loading.classList.remove("hidden");
+                loading.textContent = "Offline — waiting for a connection...";
+                data.classList.add("hidden");
+                card.style.opacity = "0.3";
+                return;
+            }
+
+            // Prepare UI for loading state
             loading.classList.remove("hidden");
-            loading.textContent = "Offline – datele pot fi vechi!";
+            loading.textContent = "Loading...";
             data.classList.add("hidden");
             card.style.opacity = "0.3";
-            return;
+
+            // Round coordinates to 2 decimals
+            const lat = userLat.toFixed(2);
+            const lon = userLon.toFixed(2);
+
+            // Build backend URL based on selected time window
+            const url = hours === null
+                ? `/api/weather?lat=${lat}&lon=${lon}&hours=1`
+                : `/api/weather?lat=${lat}&lon=${lon}&hours=${hours}`;
+
+            try {
+                // Request to backend
+                const res = await fetch(url);
+
+                // If HTTP is not OK, treat as error
+                if (!res.ok) throw new Error("Request failed");
+
+                // Parse JSON response
+                const weather = await res.json();
+
+                // Hide offline banner if request succeeded
+                hideOfflineBanner();
+
+                // Wind value fallback
+                const wind =
+                    weather.windAvg ??
+                    weather.windspeedAvg ??
+                    weather.windSpeedAvg ??
+                    weather.wind ??
+                    0;
+
+                // Update weather icon
+                document.getElementById("weatherIcon").src =
+                    pickIcon(weather.mainCondition, wind);
+
+                // Update text fields
+                document.getElementById("city").innerText =
+                    `Location: ${weather.location.city}`;
+
+                if (hours === null) {
+                    document.getElementById("temperature").innerText =
+                        `Current Temperature: ${weather.tempMin}°C`;
+                } else {
+                    document.getElementById("temperature").innerText =
+                        `Temperature: Min ${weather.tempMin}°C / Max ${weather.tempMax}°C`;
+                }
+
+                document.getElementById("condition").innerText =
+                    `Condition: ${weather.mainCondition}`;
+
+                document.getElementById("humidity").innerText =
+                    `Humidity: ${weather.humidityAvg}%`;
+
+                // Choose temperature reference for outfit 
+                const tempForOutfit = hours === null ? weather.tempMin : weather.tempMax;
+
+                // Render outfit suggestion icons
+                renderOutfitIcons(
+                    pickOutfit(tempForOutfit, weather.mainCondition, wind)
+                );
+
+                // Show final UI 
+                loading.classList.add("hidden");
+                data.classList.remove("hidden");
+                card.style.opacity = "1";
+            }
+            catch {
+                // Network error - show offline message
+                showOfflineBanner("Offline — waiting for a connection...");
+                loading.textContent = "Offline — waiting for a connection...";
+                data.classList.add("hidden");
+                card.style.opacity = "0.3";
+            }
         }
 
-        loading.classList.remove("hidden");
-        loading.textContent = "Loading...";
-        data.classList.add("hidden");
-        card.style.opacity = "0.3";
+        /*
+            BUTTON LISTENERS
+            - When user clicks a time range:
+              1) highlight the selected button
+              2) call fetchWeather with the correct hours
+        */
+        document.querySelectorAll(".hourBtn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                highlight(btn);
 
-        const lat = userLat.toFixed(2);
-        const lon = userLon.toFixed(2);
+                const mode = btn.dataset.mode;
+                const hours = btn.dataset.hours;
 
-        let url = hours === null
-            ? `/api/weather?lat=${lat}&lon=${lon}&hours=1`
-            : `/api/weather?lat=${lat}&lon=${lon}&hours=${hours}`;
-
-        try {
-            const res = await fetch(url);
-
-            // dacă backend-ul răspunde cu eroare (ex: 500), să nu crape json()
-            if (!res.ok) throw new Error("Request failed");
-
-            const weather = await res.json();
-
-            document.getElementById("city").innerText = `Location: ${weather.location.city}`;
-
-            if (hours === null)
-                document.getElementById("temperature").innerText =
-                    `Current Temperature: ${weather.tempMin}°C`;
-            else
-                document.getElementById("temperature").innerText =
-                    `Temperature: Min ${weather.tempMin}°C / Max ${weather.tempMax}°C`;
-
-            document.getElementById("condition").innerText = `Condition: ${weather.mainCondition}`;
-            document.getElementById("humidity").innerText = `Humidity: ${weather.humidityAvg}%`;
-
-            loading.classList.add("hidden");
-            data.classList.remove("hidden");
-            card.style.opacity = "1";
-
-        } catch {
-            loading.textContent = "Failed to load weather data.";
-        }
-    }
-
-    // Button listeners
-    document.querySelectorAll(".hourBtn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            highlight(btn);
-
-            const mode = btn.dataset.mode;
-            const hours = btn.dataset.hours;
-
-            if (mode === "current") fetchWeather(null);
-            else fetchWeather(hours);
+                if (mode === "current") fetchWeather(null);
+                else fetchWeather(hours);
+            });
         });
+
+        /*
+            GEOLOCATION
+            - We request the user's current location from the browser.
+            - If permission is granted: store coordinates and load "Current" weather.
+            - If permission is denied: show error and explain that location is required.
+        */
+        navigator.geolocation.getCurrentPosition(pos => {
+            userLat = Number(pos.coords.latitude.toFixed(2));
+            userLon = Number(pos.coords.longitude.toFixed(2));
+
+            // Default selection: "Current"
+            const currentBtn = document.querySelector('[data-mode="current"]');
+            highlight(currentBtn);
+
+            // Load weather for the current time window
+            fetchWeather(null);
+        }, () => {
+            // If location is denied
+            showOfflineBanner("Location permission required (and internet) to load weather.");
+            alert("Location access is required to load weather.");
+        });
+
     });
-
-    // Get location (NO fallback)
-    navigator.geolocation.getCurrentPosition(pos => {
-        userLat = Number(pos.coords.latitude.toFixed(2));
-        userLon = Number(pos.coords.longitude.toFixed(2));
-
-        const currentBtn = document.querySelector('[data-mode="current"]');
-        highlight(currentBtn);
-        fetchWeather(null);
-
-    }, () => {
-        alert("Location access is required to load weather.");
-    });
-
 </script>
 
 </body>

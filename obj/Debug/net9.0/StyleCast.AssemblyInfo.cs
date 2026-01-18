@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StyleCast")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b14930ae70a411c35a404f1e60e15a062e6371f3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b91e70e3c5811f6fe5868450cc48fae6ba4ce3f0")]
 [assembly: System.Reflection.AssemblyProductAttribute("StyleCast")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StyleCast")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

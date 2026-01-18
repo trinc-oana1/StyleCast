@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "D:\\UTCN_sem1_an4\\StyleCast_v3\\StyleCast\\StyleCast.csproj": {}
+    "D:\\UTCN_sem1_an4\\StyleCast_finalllllllllllllllllllllllllllllllllllllllllllllllllllllll\\StyleCast\\StyleCast.csproj": {}
   },
   "projects": {
-    "D:\\UTCN_sem1_an4\\StyleCast_v3\\StyleCast\\StyleCast.csproj": {
+    "D:\\UTCN_sem1_an4\\StyleCast_finalllllllllllllllllllllllllllllllllllllllllllllllllllllll\\StyleCast\\StyleCast.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\UTCN_sem1_an4\\StyleCast_v3\\StyleCast\\StyleCast.csproj",
+        "projectUniqueName": "D:\\UTCN_sem1_an4\\StyleCast_finalllllllllllllllllllllllllllllllllllllllllllllllllllllll\\StyleCast\\StyleCast.csproj",
         "projectName": "StyleCast",
-        "projectPath": "D:\\UTCN_sem1_an4\\StyleCast_v3\\StyleCast\\StyleCast.csproj",
+        "projectPath": "D:\\UTCN_sem1_an4\\StyleCast_finalllllllllllllllllllllllllllllllllllllllllllllllllllllll\\StyleCast\\StyleCast.csproj",
         "packagesPath": "C:\\Users\\trinc\\.nuget\\packages\\",
-        "outputPath": "D:\\UTCN_sem1_an4\\StyleCast_v3\\StyleCast\\obj\\",
+        "outputPath": "D:\\UTCN_sem1_an4\\StyleCast_finalllllllllllllllllllllllllllllllllllllllllllllllllllllll\\StyleCast\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\trinc\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net8.0"
+          "net9.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net8.0": {
-            "targetAlias": "net8.0",
+          "net9.0": {
+            "targetAlias": "net9.0",
             "projectReferences": {}
           }
         },
@@ -41,30 +41,30 @@
         "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
-        "net8.0": {
-          "targetAlias": "net8.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "dependencies": {
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[8.0.10, )"
+              "version": "[9.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[8.0.10, )"
+              "version": "[9.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
-              "version": "[8.0.10, )"
+              "version": "[9.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.10, )"
+              "version": "[9.0.10, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.9.0, )"
+              "version": "[9.0.6, )"
             }
           },
           "imports": [
@@ -78,24 +78,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.21, 8.0.21]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.21, 8.0.21]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.21, 8.0.21]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.21, 8.0.21]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"

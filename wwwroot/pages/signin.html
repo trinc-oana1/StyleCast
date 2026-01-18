@@ -3,85 +3,213 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
     <title>StyleCast — Sign In</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { navy:'#1A2A4F', peach:'#F7A5A5' } } }
+            theme: {
+                extend: {
+                    colors: {
+                        navy:'#1A2A4F',
+                        peach:'#F7A5A5'
+                    }
+                }
+            }
         };
     </script>
 </head>
 
 <body class="min-h-screen bg-peach text-navy font-[Tahoma]">
 
+<!--
+    OFFLINE BANNER
+    - Visible only when the application detects no internet connection
+    - Used to inform the user that login cannot be performed without network access
+-->
+<div id="offlineBanner"
+     class="hidden sticky top-0 z-50 bg-peach text-navy border-b border-navy/30 px-4 py-2 text-center font-bold">
+    Offline — waiting for a connection...
+</div>
+
+<!-- NAVBAR -->
 <header class="bg-navy text-peach shadow-md">
     <nav class="relative flex items-center justify-between h-16 px-6">
+
         <a href="/pages/home.html" class="flex items-center gap-3">
             <img src="/images/logo.png" alt="StyleCast Logo" class="h-16 w-auto" />
             <span class="font-extrabold text-xl tracking-wide">StyleCast</span>
         </a>
 
-        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-6 items-center">
-            <a href="/pages/home.html"    class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Home</a>
-            <a href="/pages/explore.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Explore</a>
-            <a href="/pages/register.html" class="font-bold px-3 py-1 rounded hover:bg-peach hover:text-navy">Register</a>
-        </div>
     </nav>
 </header>
 
+<!-- MAIN CONTENT -->
 <main class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+
+    <!-- Login card -->
     <section class="w-full max-w-sm bg-white/60 backdrop-blur rounded-2xl shadow-lg ring-1 ring-navy/10 p-8 text-center">
+
         <h1 class="text-3xl font-bold mb-2">Sign in</h1>
-        <p class="text-sm opacity-80 mb-8">Enter your credentials to access your account.</p>
 
+        <p class="text-sm opacity-80 mb-8">
+            Enter your credentials to access your account.
+        </p>
+
+        <!-- Login form -->
         <form id="loginForm" class="space-y-4">
+
+            <!-- Email input -->
             <div>
-                <label for="email" class="block text-sm font-medium mb-1 text-center">Email</label>
-                <input id="email" type="email" placeholder="Enter your email"
-                       class="w-full p-3 rounded-md bg-white text-navy text-center placeholder-navy/40 border border-navy/20 focus:outline-none focus:ring-2 focus:ring-navy" required />
+                <label for="email" class="block text-sm font-medium mb-1 text-center">
+                    Email
+                </label>
+
+                <input id="email"
+                       type="email"
+                       placeholder="Enter your email"
+                       class="w-full p-3 rounded-md bg-white text-navy text-center
+                              placeholder-navy/40 border border-navy/20
+                              focus:outline-none focus:ring-2 focus:ring-navy"
+                       required />
             </div>
 
+            <!-- Password input -->
             <div>
-                <label for="password" class="block text-sm font-medium mb-1 text-center">Password</label>
-                <input id="password" type="password" placeholder="**********"
-                       class="w-full p-3 rounded-md bg-white text-navy text-center placeholder-navy/40 border border-navy/20 focus:outline-none focus:ring-2 focus:ring-navy" required />
+                <label for="password" class="block text-sm font-medium mb-1 text-center">
+                    Password
+                </label>
+
+                <input id="password"
+                       type="password"
+                       placeholder="**********"
+                       class="w-full p-3 rounded-md bg-white text-navy text-center
+                              placeholder-navy/40 border border-navy/20
+                              focus:outline-none focus:ring-2 focus:ring-navy"
+                       required />
             </div>
 
-            <button type="submit" class="w-full mt-2 bg-navy text-peach text-sm font-semibold py-3 rounded-md shadow-md hover:opacity-90">
+            <!-- Sign-in button -->
+            <button id="loginBtn"
+                    type="submit"
+                    class="w-full mt-2 bg-navy text-peach text-sm font-semibold
+                           py-3 rounded-md shadow-md hover:opacity-90">
                 Sign in
             </button>
 
+            <!-- Link to Register page -->
             <p class="text-sm mt-3">
                 Don’t have an account?
-                <a href="/pages/register.html" class="ml-1 font-medium underline decoration-navy hover:text-navy/70">
+                <a href="/pages/register.html"
+                   class="ml-1 font-medium underline decoration-navy hover:text-navy/70">
                     Register here
                 </a>
             </p>
+
         </form>
     </section>
 </main>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    window.addEventListener("DOMContentLoaded", () => {
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        /*
+            OFFLINE DETECTION LOGIC
+            - Shows a banner when the internet connection is lost
+            - Disables the signin button to prevent failed requests
+        */
 
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+        const offlineBanner = document.getElementById("offlineBanner");
+        const loginBtn = document.getElementById("loginBtn");
+
+        // Show offline banner and disable login action
+        function showOfflineBanner() {
+            offlineBanner.classList.remove("hidden");
+
+            if (loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.classList.add("opacity-50", "cursor-not-allowed");
+            }
+        }
+
+        // Hide offline banner and enable login action
+        function hideOfflineBanner() {
+            offlineBanner.classList.add("hidden");
+
+            if (loginBtn) {
+                loginBtn.disabled = false;
+                loginBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+        }
+
+        // Check current connectivity status
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                hideOfflineBanner();
+            } else {
+                showOfflineBanner();
+            }
+        }
+
+        // React to browser online/offline events
+        window.addEventListener("online", updateOnlineStatus);
+        window.addEventListener("offline", updateOnlineStatus);
+
+        // Periodic check to ensure stability across browsers
+        setInterval(updateOnlineStatus, 2000);
+
+        // Initial check on page load
+        updateOnlineStatus();
+
+
+        /*
+            LOGIN FORM SUBMISSION
+            - Sends credentials to backend API
+            - On success: redirects user to Home page
+            - On failure: shows error message returned by backend
+        */
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Prevent login when offline
+            if (!navigator.onLine) {
+                showOfflineBanner();
+                alert("Offline — waiting for a connection...");
+                return;
+            }
+
+            // Collect user input
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Send login request to backend
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                // Handle success
+                if (response.ok) {
+                    alert('Login successful!');
+                    window.location.href = '/pages/home.html';
+                }
+                // Handle invalid credentials or backend validation errors
+                else {
+                    const data = await response.json();
+                    alert(data.message || 'Invalid email or password');
+                }
+            }
+                // Handle network errors
+            catch {
+                showOfflineBanner();
+                alert("Offline — waiting for a connection...");
+            }
         });
 
-        if (response.ok) {
-            alert('Login successful!');
-            window.location.href = '/pages/home.html';
-        } else {
-            const data = await response.json();
-            alert(data.message || 'Invalid email or password');
-        }
     });
 </script>
 
